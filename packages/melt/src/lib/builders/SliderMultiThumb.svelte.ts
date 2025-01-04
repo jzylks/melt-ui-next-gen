@@ -79,8 +79,8 @@ export class SliderMultiThumb {
 	#mouseDown = false;
 	#dragging = false;
 	#mouseDownAt: null | number = null;
-	#isActive = false;
-	#activeThumb: { el: HTMLElement; index: number } | null = null;
+	#isActive = $state(false);
+	#activeThumb: { el: HTMLElement; index: number } | null = $state(null);
 	#numThumbs = $derived(this.#value.current.length);
 
     constructor(props: SliderMultiThumbProps = {}) {
@@ -95,6 +95,16 @@ export class SliderMultiThumb {
 	/** The value of the slider. */
 	get value() {
 		return this.#value.current;
+	}
+
+	/** Get whether the slider is being dragged **/
+	get isActive() {
+		return this.#isActive;
+	}
+
+	/** Get the active thumb **/
+	get activeThumb() {
+		return this.#activeThumb;
 	}
 
 	// set value(value: number[]) {
@@ -344,6 +354,10 @@ class Thumb {
 		return this.#slider.horizontal ? v :  1 - v;
 	}
 
+	get #dragging() {
+		return (this.#slider.isActive && this.#slider.activeThumb?.index === this.#index) || undefined;
+	}
+
 	get trigger() {
 		const percentage = `${this.#percentage * 100}%`;
 		const percentageInverse = `${(1 - this.#percentage) * 100}%`;
@@ -355,6 +369,7 @@ class Thumb {
 			"aria-orientation": this.#slider.orientation,
 			role: "slider",
 			tabindex: 0,
+			"data-dragging": this.#dragging,
 			[dataIds.thumb]: "",
 			style: styleAttr({
 				[`--percentage`]: this.#slider.ltr ? percentage : percentageInverse,
